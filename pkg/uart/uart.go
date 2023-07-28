@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	"go.bug.st/serial"
+	"go.bug.st/serial/enumerator"
+
+	"runtime"
 )
 
 type Uart struct {
@@ -14,13 +17,35 @@ type Uart struct {
 
 func GetPortsList() []string {
 
-	ports, err := serial.GetPortsList()
-	if err != nil {
-		fmt.Println("Error listing ports: ", err)
-		return nil
+	if runtime.GOOS == "windows" {
+		ports, err := serial.GetPortsList()
+		if err != nil {
+			fmt.Println("Error listing ports: ", err)
+			return nil
+		}
+		return ports
 	}
 
-	return ports
+	if runtime.GOOS == "linux" {
+		// get usb ports
+		usbPorts, err := enumerator.GetDetailedPortsList()
+		if err != nil {
+			fmt.Println("Error listing ports: ", err)
+			return nil
+		}
+		portNames := make([]string, 0)
+
+		for _, port := range usbPorts {
+			// if port.IsUSB {
+			// fmt.Printf("Port: %v\n", port)
+			portNames = append(portNames, port.Name)
+			// }
+		}
+		return portNames
+	}
+
+	return nil
+
 }
 
 func OpenPort(portName string, baudRate int) (*Uart, error) {

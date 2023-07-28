@@ -1,6 +1,7 @@
 package main
 
 import (
+	"changeme/pkg/uart"
 	"context"
 	"fmt"
 )
@@ -23,5 +24,6 @@ func (a *App) startup(ctx context.Context) {
 
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
+	fmt.Print(uart.GetPortsList())
 	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
