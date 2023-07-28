@@ -75,12 +75,18 @@ func (a *App) OpenPort(port string, baud int) string {
 	}
 	a.uart = uart
 
+	a.uart.SetErrorHandler(func(err error) {
+		runtime.EventsEmit(a.ctx, "error", err.Error())
+	})
+
 	// read data
 	go func() {
 		for {
 			data := a.uart.Receive()
 			// emit an event
+			fmt.Println("data", string(data))
 			runtime.EventsEmit(a.ctx, "Read", base64.StdEncoding.EncodeToString(data))
+
 		}
 	}()
 

@@ -71,10 +71,8 @@
   <div class="result" id="readdata">{readData}</div>
   <div class="result" id="time">{timeText}</div>
   <div class="result" id="openstatus">{openStatus}</div>
-  <img alt="Wails logo" id="logo" src="{logo}">
   <div class="result" id="result">{resultText}</div>
   <div class="input-box" id="input">
-    <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
     <button on:click={getPorts}>获取串口列表</button>
     <button on:click={openPort_1}>开关串口一</button>
     <button on:click={closePort_1}>关闭串口一</button>

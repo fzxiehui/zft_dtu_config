@@ -1,6 +1,7 @@
 package uart
 
 import (
+	"errors"
 	"fmt"
 
 	"go.bug.st/serial"
@@ -13,6 +14,8 @@ type Uart struct {
 	Port           serial.Port
 	SendChannel    chan []byte
 	ReceiveChannel chan []byte
+	ErrorHandler   func(error) // error handler
+	Connection     bool        // 是否连接
 }
 
 func GetPortsList() []string {
@@ -64,12 +67,18 @@ func OpenPort(portName string, baudRate int) (*Uart, error) {
 		Port:           port,
 		SendChannel:    make(chan []byte),
 		ReceiveChannel: make(chan []byte),
+		ErrorHandler:   nil,
 	}
 
 	go uart.SendRoutine()
 	go uart.ReceiveRoutine()
+	uart.Connection = true
 
 	return uart, nil
+}
+
+func (u *Uart) SetErrorHandler(handler func(error)) {
+	u.ErrorHandler = handler
 }
 
 func (uart *Uart) SendRoutine() {
@@ -79,6 +88,12 @@ func (uart *Uart) SendRoutine() {
 		_, err := uart.Port.Write(data)
 		if err != nil {
 			fmt.Println("Error writing to port: ", err)
+			if uart.ErrorHandler != nil {
+				uart.ErrorHandler(errors.New("连接已断开"))
+				uart.Close()
+				return
+			}
+
 		}
 	}
 }
@@ -90,6 +105,11 @@ func (uart *Uart) ReceiveRoutine() {
 		n, err := uart.Port.Read(data)
 		if err != nil {
 			fmt.Println("Error reading from port: ", err)
+			if uart.ErrorHandler != nil {
+				uart.ErrorHandler(errors.New("连接已断开"))
+				uart.Close()
+				return
+			}
 		}
 		uart.ReceiveChannel <- data[:n]
 	}
@@ -104,5 +124,6 @@ func (uart *Uart) Receive() []byte {
 }
 
 func (uart *Uart) Close() {
+	uart.Connection = false
 	uart.Port.Close()
 }
