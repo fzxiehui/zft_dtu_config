@@ -2,15 +2,28 @@
   import logo from './assets/images/logo-universal.png'
   import {Greet} from '../wailsjs/go/main/App.js'
 
+	// 阿付看这里, 这里是事件监听
+	import { EventsOn } from '../wailsjs/runtime'
+
   let resultText: string = "Please enter your name below 👇"
   let name: string
+	let timeText: string = "The time is: "
 
   function greet(): void {
     Greet(name).then(result => resultText = result)
   }
+
+
+
+	// 阿付看这里, 这里是事件监听
+	EventsOn('test', (res)=>{
+		// console.log(res)
+		timeText = res
+	}, -1)
 </script>
 
 <main>
+  <div class="result" id="tiem">{timeText}</div>
   <img alt="Wails logo" id="logo" src="{logo}">
   <div class="result" id="result">{resultText}</div>
   <div class="input-box" id="input">
