@@ -3,8 +3,8 @@ package main
 import (
 	"changeme/pkg/uart"
 	"context"
+	"encoding/base64"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -12,7 +12,8 @@ import (
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx  context.Context
+	uart *uart.Uart
 }
 
 // NewApp creates a new App application struct
@@ -36,17 +37,6 @@ func (a *App) startup(ctx context.Context) {
 	}()
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	fmt.Print(uart.GetPortsList())
-	portList := uart.GetPortsList()
-	if len(portList) == 0 {
-		return "No ports found"
-	}
-	result := strings.Join(portList, ", ")
-	return result
-}
-
 // domReady 在前端Dom加载完毕后调用
 func (a *App) domReady(ctx context.Context) {
 	// Add your action here
@@ -65,4 +55,70 @@ func (a *App) beforeClose(ctx context.Context) (prevent bool) {
 func (a *App) shutdown(ctx context.Context) {
 	// 在此处做一些资源释放的操作
 	fmt.Println("shutdown")
+}
+
+// 获取串口列表
+func (a *App) GetPortsList() []string {
+
+	ports := uart.GetPortsList()
+	if len(ports) == 0 {
+		return []string{"No ports found"}
+	}
+	return ports
+}
+
+func (a *App) OpenPort(port string, baud int) string {
+	// fmt.Println("OpenPort")
+	uart, err := uart.OpenPort(port, baud)
+	if err != nil {
+		return "打开串口失败"
+	}
+	a.uart = uart
+
+	// read data
+	go func() {
+		for {
+			data := a.uart.Receive()
+			// emit an event
+			runtime.EventsEmit(a.ctx, "Read", base64.StdEncoding.EncodeToString(data))
+		}
+	}()
+
+	return "打开串口成功"
+}
+
+func (a *App) ClosePort() string {
+	if a.uart == nil {
+		return "关闭失败"
+	}
+	a.uart.Close()
+	return "已成功关闭串口"
+}
+
+// func (a *App) Send(data []byte) string {
+// 	if a.uart == nil {
+// 		return "发送失败"
+// 	}
+// 	a.uart.Send(data)
+// 	return "发送成功"
+// }
+
+// func (a *App) Send(data string) string {
+// 	if a.uart == nil {
+// 		return "发送失败"
+// 	}
+// 	a.uart.Send([]byte(data))
+// 	return "发送成功"
+// }
+
+func (a *App) Send(dataBase64 string) string {
+	if a.uart == nil {
+		return "发送失败"
+	}
+	data, err := base64.StdEncoding.DecodeString(dataBase64)
+	if err != nil {
+		return "发送失败"
+	}
+	a.uart.Send(data)
+	return "发送成功"
 }

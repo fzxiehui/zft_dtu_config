@@ -1,6 +1,10 @@
 <script lang="ts">
   import logo from './assets/images/logo-universal.png'
-  import {Greet} from '../wailsjs/go/main/App.js'
+  import {
+		GetPortsList,
+		OpenPort,
+		ClosePort,
+		Send } from '../wailsjs/go/main/App.js'
 
 	// 阿付看这里, 这里是事件监听
 	import { EventsOn } from '../wailsjs/runtime'
@@ -8,12 +12,53 @@
   let resultText: string = "Please enter your name below 👇"
   let name: string
 	let timeText: string = "The time is: "
+	let openStatus: string = "None"
+	let readData: string = "None"
 
-  function greet(): void {
-    Greet(name).then(result => resultText = result)
+  function getPorts(): void {
+    GetPortsList().then(
+			result => resultText = result
+		)
   }
 
+	function openPort_1(): void {
+    OpenPort("/dev/ttyUSB0", 9600).then(result => openStatus = result)
+	}
 
+	function closePort_1(): void {
+		ClosePort().then(result => openStatus = result)
+	}
+
+	function send(): void {
+		let data = "Hello World"
+		// data to byte array
+		// let dataBytes = new TextEncoder().encode(data)
+		// Send(dataBytes).then(result => resultText = result)
+		
+		// data to uint8array
+		// let dataBytes = new TextEncoder().encode(data)
+		// let dataUint8Array = new Uint8Array(dataBytes)
+		// console.log(dataUint8Array)
+		// Send(dataUint8Array).then(result => resultText = result)
+
+		// Send(dataUint8Array).then(result => resultText = result)
+
+		// data to base64
+		let dataBase64 = btoa(data)
+		Send(dataBase64).then(result => resultText = result)
+
+
+
+	}
+
+	// read data from serial port
+	EventsOn('Read', (base64data)=>{
+		// console.log(res)
+		base64data = base64data.replace(/[\r\n]/g,"")
+		let data = atob(base64data)
+		readData = data
+
+	}, -1)
 
 	// 阿付看这里, 这里是事件监听
 	EventsOn('test', (res)=>{
@@ -23,12 +68,17 @@
 </script>
 
 <main>
-  <div class="result" id="tiem">{timeText}</div>
+  <div class="result" id="readdata">{readData}</div>
+  <div class="result" id="time">{timeText}</div>
+  <div class="result" id="openstatus">{openStatus}</div>
   <img alt="Wails logo" id="logo" src="{logo}">
   <div class="result" id="result">{resultText}</div>
   <div class="input-box" id="input">
     <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
-    <button class="btn" on:click={greet}>Greet</button>
+    <button on:click={getPorts}>获取串口列表</button>
+    <button on:click={openPort_1}>开关串口一</button>
+    <button on:click={closePort_1}>关闭串口一</button>
+		<button on:click={send}>发送</button>
   </div>
 </main>
 
