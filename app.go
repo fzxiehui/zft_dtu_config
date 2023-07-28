@@ -47,7 +47,22 @@ func (a *App) Greet(name string) string {
 	return result
 }
 
-// Shutdown is called when the app is shutting down
-func (a *App) shutdown() {
-	fmt.Println("Goodbye")
+// domReady 在前端Dom加载完毕后调用
+func (a *App) domReady(ctx context.Context) {
+	// Add your action here
+	// 在这里添加你的操作
+	fmt.Println("Dom is ready")
+}
+
+// beforeClose在单击窗口关闭按钮或调用runtime.Quit即将退出应用程序时被调用.
+// 返回 true 将导致应用程序继续，false 将继续正常关闭。
+func (a *App) beforeClose(ctx context.Context) (prevent bool) {
+	fmt.Println("beforeClose")
+	return false
+}
+
+// 在应用程序终止时被调用
+func (a *App) shutdown(ctx context.Context) {
+	// 在此处做一些资源释放的操作
+	fmt.Println("shutdown")
 }
