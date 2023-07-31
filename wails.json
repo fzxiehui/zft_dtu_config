@@ -2,10 +2,11 @@
   "$schema": "https://wails.io/schemas/config.v2.json",
   "name": "config",
   "outputfilename": "config",
+	"frontend:dir": "config-ui",
   "frontend:install": "npm install",
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
-  "frontend:dev:serverUrl": "auto",
+  "frontend:dev:serverUrl": "http://localhost:9000/",
   "author": {
     "name": "fzxiehui",
     "email": "xie18960920183@outlook.com"
