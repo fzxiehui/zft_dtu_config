@@ -52,7 +52,7 @@
 	}
 
 	// read data from serial port
-	EventsOn('Read', (base64data)=>{
+	EventsOn('read', (base64data)=>{
 		// console.log(res)
 		base64data = base64data.replace(/[\r\n]/g,"")
 		let data = atob(base64data)
@@ -64,6 +64,12 @@
 	EventsOn('test', (res)=>{
 		// console.log(res)
 		timeText = res
+	}, -1)
+
+	// 串口异常已被关闭
+	EventsOn('error', (res)=>{
+		// console.log(res)
+		openStatus = res
 	}, -1)
 </script>
 

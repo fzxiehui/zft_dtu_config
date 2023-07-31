@@ -85,7 +85,7 @@ func (a *App) OpenPort(port string, baud int) string {
 			data := a.uart.Receive()
 			// emit an event
 			fmt.Println("data", string(data))
-			runtime.EventsEmit(a.ctx, "Read", base64.StdEncoding.EncodeToString(data))
+			runtime.EventsEmit(a.ctx, "read", base64.StdEncoding.EncodeToString(data))
 
 		}
 	}()
